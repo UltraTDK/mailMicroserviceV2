@@ -41,10 +41,10 @@ public class MailController {
 
         mailSender.setJavaMailProperties(properties);
     }
+
     @GetMapping("/")
     @ResponseBody
     public String testResponse() { return "Hello"; }
-
 
     @PostMapping("/send_text_email")
     public String sendPlainTextEmail(@RequestBody Mail mail) {

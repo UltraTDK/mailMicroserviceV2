@@ -5,7 +5,9 @@ eureka:
 
 ---
 spring:
-  profiles: heroku
+  config:
+    activate:
+      on-profile: heroku
   mail:
     host: smtp.mailtrap.io
     port: 2525
