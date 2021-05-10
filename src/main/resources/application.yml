@@ -19,8 +19,11 @@ spring:
           auth: true
           starttls:
             enable: true
+  application:
+    name: mail-microservice
 server:
   port: 8008
+
 
 eureka:
   instance:
