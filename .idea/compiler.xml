@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="mailMicroservice" target="16" />
+      <module name="mailMicroservice" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
