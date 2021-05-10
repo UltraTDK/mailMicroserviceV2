@@ -20,7 +20,7 @@ spring:
           starttls:
             enable: true
   application:
-    name: mail-microservice
+    name: { mail-microservice }
 server:
   port: 8008
 
