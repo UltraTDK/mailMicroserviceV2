@@ -1,7 +1,7 @@
 {
     "name": "MailMicroservice",
     "description": "Mail Microservice Eureka client.",
-    "website": "https://github.com/UltraTDK/mailMicroserviceV2.git",
+    "website": "https://github.com/s-valentin/MailMicroservice.git",
     "success_url": "/health",
     "env": {
       "EUREKA_URL": {
