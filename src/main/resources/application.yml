@@ -1,0 +1,27 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URL:http://user:password@localhost:5000}/eureka/
+
+---
+spring:
+  profiles: heroku
+  mail:
+    host: smtp.mailtrap.io
+    port: 2525
+    username: d8139f71238564
+    password: 6aa07a6bb7d59d
+    properties:
+      mail:
+        smtp:
+          auth: true
+        starttls:
+          enable: true
+server:
+  port: 8082
+
+eureka:
+  instance:
+    hostname: ${DOMAIN_NAME}
+    nonSecurePort: 80
+  password: ${USER_PASSWORD:password}
