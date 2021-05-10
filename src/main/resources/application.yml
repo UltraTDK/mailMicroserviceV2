@@ -1,3 +1,9 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URL:http://user:password@localhost:5000}/eureka/
+
+---
 spring:
   config:
     activate:
@@ -17,10 +23,6 @@ server:
   port: 8008
 
 eureka:
-  client:
-    serviceUrl:
-      defaultZone: ${EUREKA_URL:http://user:password@localhost:5000}/eureka/
-
   instance:
     hostname: ${DOMAIN_NAME}
     nonSecurePort: 80
