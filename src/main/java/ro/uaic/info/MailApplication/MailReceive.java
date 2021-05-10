@@ -1,6 +1,8 @@
 package ro.uaic.info.MailApplication;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -11,8 +13,10 @@ import com.sun.mail.pop3.POP3Store;
 
 public class MailReceive{
 
-    public static void receiveEmail(String pop3Host, String port ,String storeType,
-                                    String user, String password) {
+    public static ArrayList<Mail> receiveEmail(String pop3Host, String port , String storeType,
+                                                  String user, String password) {
+        ArrayList<Message> messages = new ArrayList<>();
+        ArrayList<Mail> messages_mail = new ArrayList<>();
         try {
             //1) get the session object
             Properties properties = new Properties();
@@ -41,7 +45,21 @@ public class MailReceive{
             emailFolder.open(Folder.READ_ONLY);
 
             //4) retrieve the messages from the folder in an array and print it
-            Message[] messages = emailFolder.getMessages();
+            messages = new ArrayList<>(Arrays.asList(emailFolder.getMessages()));
+
+
+            for (int i = 0; i < 10; i++) {
+                Message message = messages.get(i);
+                //messages_mail.get(i).setFrom(message.getFrom().toString());
+                //messages_mail.get(i).setSubject(message.getSubject());
+                //messages_mail.get(i).setContent(message.getContent().toString());
+
+                messages_mail.add(new Mail(message.getFrom().toString(), message.getReplyTo().toString(),message.getSubject(),message.getContent().toString()));
+            }
+
+
+
+            /*
             for (int i = 0; i < messages.length; i++) {
                 Message message = messages[i];
                 System.out.println("---------------------------------");
@@ -49,15 +67,19 @@ public class MailReceive{
                 System.out.println("Subject: " + message.getSubject());
                 System.out.println("From: " + message.getFrom()[0]);
                 System.out.println("Text: " + message.getContent().toString());
-            }
+            }*/
 
             //5) close the store and folder objects
+
+
             emailFolder.close(false);
             emailStore.close();
 
         } catch (NoSuchProviderException e) {e.printStackTrace();}
-        catch (MessagingException e) {e.printStackTrace();}
-        catch (IOException e) {e.printStackTrace();}
+        catch (MessagingException e) {e.printStackTrace();} catch (IOException e) {
+            e.printStackTrace();
+        }
+        return messages_mail;
     }
 
 }

@@ -71,8 +71,9 @@ public class Mail {
         return attachment;
     }
     public String getAttachmentName(){
-        String[] strings= this.attachment.split("\\\\");
-        return strings[strings.length-1];
+        //String[] strings= this.attachment.split("\\\\");
+        //return strings[strings.length-1];
+        return "nope";
     }
 
     public void setAttachment(String attachment) {

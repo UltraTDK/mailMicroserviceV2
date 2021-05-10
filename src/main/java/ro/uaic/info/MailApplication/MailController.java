@@ -4,18 +4,18 @@ import org.junit.jupiter.api.BeforeAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Properties;
 
 @RestController
@@ -42,7 +42,7 @@ public class MailController {
         mailSender.setJavaMailProperties(properties);
     }
 
-    @GetMapping("/")
+    @GetMapping("/test")
     @ResponseBody
     public String testResponse() { return "Hello"; }
 
@@ -79,8 +79,8 @@ public class MailController {
         return "result";
     }
 
-    @PostMapping("/requestpop")
-    public ResponseEntity postController(
+    @PostMapping(path="/getEmails", produces=MediaType.APPLICATION_JSON_VALUE)
+    public Mail /*ArrayList<Message>*/ postController(
             @RequestBody MailPOPcfg user) {
         System.out.println(user.port);
         System.out.println(user.host);
@@ -88,9 +88,7 @@ public class MailController {
         System.out.println(user.username);
         System.out.println(user.password);
 
-        mailbox.receiveEmail(user.host,Integer.toString(user.port) ,user.mailStoreType,user.username,user.password );
-
-        return ResponseEntity.ok(HttpStatus.OK);
+        return mailbox.receiveEmail(user.host,Integer.toString(user.port) ,user.mailStoreType,user.username,user.password ).get(2);
     }
 
     @PostMapping("/request")
@@ -115,4 +113,5 @@ public class MailController {
 
         return ResponseEntity.ok(HttpStatus.OK);
     }
+
 }
