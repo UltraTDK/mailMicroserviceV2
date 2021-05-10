@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Properties;
 
 @RestController
+@RequestMapping("mail")
 public class MailController {
 
     @Autowired
