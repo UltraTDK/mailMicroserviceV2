@@ -5,6 +5,8 @@ eureka:
 
 ---
 spring:
+  application:
+    name: mail-microservice
   config:
     activate:
       on-profile: heroku
@@ -19,9 +21,6 @@ spring:
           auth: true
           starttls:
             enable: true
-
-#server:
-#  port: 8008
 
 eureka:
   instance:
