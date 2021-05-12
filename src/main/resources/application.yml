@@ -1,3 +1,7 @@
+spring:
+  application:
+    name: mail-microservice
+
 eureka:
   client:
     serviceUrl:
@@ -5,8 +9,6 @@ eureka:
 
 ---
 spring:
-  application:
-    name: mail-microservice
   config:
     activate:
       on-profile: heroku
