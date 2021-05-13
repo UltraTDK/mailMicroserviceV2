@@ -60,7 +60,7 @@ public class MailController {
     }
 
     @PostMapping("/send_email_attachment")
-    public String sendHTMLEmailWithAttachment(@RequestBody Mail mailAttachment) throws MessagingException {
+    public ResponseEntity sendHTMLEmailWithAttachment(@RequestBody Mail mailAttachment) throws MessagingException {
 
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -76,28 +76,19 @@ public class MailController {
         helper.addAttachment(mailAttachment.getAttachmentName(), file);
 
         mailSender.send(message);
-        return "result";
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PostMapping(path="/getEmails", produces=MediaType.APPLICATION_JSON_VALUE)
     public Mail /*ArrayList<Message>*/ postController(
             @RequestBody MailPOPcfg user) {
-        System.out.println(user.port);
-        System.out.println(user.host);
-        System.out.println(user.mailStoreType);
-        System.out.println(user.username);
-        System.out.println(user.password);
 
-        return mailbox.receiveEmail(user.host,Integer.toString(user.port) ,user.mailStoreType,user.username,user.password ).get(2);
+        return mailbox.receiveEmail(user.host,Integer.toString(user.port) ,user.mailStoreType,user.username,user.password ).get(7);
     }
 
-    @PostMapping("/request")
+    @PostMapping("/configSMTP")
     public ResponseEntity postController(
             @RequestBody MailCfg user) {
-        System.out.println(user.port);
-        System.out.println(user.host);
-        System.out.println(user.username);
-        System.out.println(user.password);
 
         mailSender = new JavaMailSenderImpl();
         mailSender.setHost(user.host);

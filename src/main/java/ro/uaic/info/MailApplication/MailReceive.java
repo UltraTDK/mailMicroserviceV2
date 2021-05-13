@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
-import javax.mail.Session;
+import javax.mail.*;
+import javax.mail.internet.MimeMultipart;
+
 import com.sun.mail.pop3.POP3Store;
 
 public class MailReceive{
@@ -54,7 +52,7 @@ public class MailReceive{
                 //messages_mail.get(i).setSubject(message.getSubject());
                 //messages_mail.get(i).setContent(message.getContent().toString());
 
-                messages_mail.add(new Mail(message.getFrom().toString(), message.getReplyTo().toString(),message.getSubject(),message.getContent().toString()));
+                messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(),message.getSubject(),getTextFromMessage(message) ));
             }
 
 
@@ -80,6 +78,37 @@ public class MailReceive{
             e.printStackTrace();
         }
         return messages_mail;
+    }
+
+
+    private static String getTextFromMessage(Message message) throws MessagingException, IOException {
+        String result = "";
+        if (message.isMimeType("text/plain")) {
+            result = message.getContent().toString();
+        } else if (message.isMimeType("multipart/*")) {
+            MimeMultipart mimeMultipart = (MimeMultipart) message.getContent();
+            result = getTextFromMimeMultipart(mimeMultipart);
+        }
+        return result;
+    }
+
+    private static String getTextFromMimeMultipart(
+            MimeMultipart mimeMultipart)  throws MessagingException, IOException{
+        String result = "";
+        int count = mimeMultipart.getCount();
+        for (int i = 0; i < count; i++) {
+            BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+            if (bodyPart.isMimeType("text/plain")) {
+                result = result + "\n" + bodyPart.getContent();
+                break; // without break same text appears twice in my tests
+            } else if (bodyPart.isMimeType("text/html")) {
+                String html = (String) bodyPart.getContent();
+                result = result + "\n" + bodyPart.getContent();//org.jsoup.Jsoup.parse(html).text();
+            } else if (bodyPart.getContent() instanceof MimeMultipart){
+                result = result + getTextFromMimeMultipart((MimeMultipart)bodyPart.getContent());
+            }
+        }
+        return result;
     }
 
 }
