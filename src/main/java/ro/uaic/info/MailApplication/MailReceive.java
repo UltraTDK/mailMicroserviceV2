@@ -9,10 +9,13 @@ import javax.mail.internet.MimeMultipart;
 
 import com.sun.mail.pop3.POP3Store;
 
-public class MailReceive{
+public class MailReceive {
 
-    public static ArrayList<Mail> receiveEmail(String pop3Host, String port , String storeType,
-                                                  String user, String password) {
+    POP3Store emailStore;
+    Properties properties = new Properties();
+
+    public static ArrayList<Mail> receiveEmail(String pop3Host, String port, String storeType,
+                                               String user, String password) {
         ArrayList<Message> messages = new ArrayList<>();
         ArrayList<Mail> messages_mail = new ArrayList<>();
         try {
@@ -26,7 +29,7 @@ public class MailReceive{
             properties.setProperty("mail.pop3s.port", port);
             properties.setProperty("mail.pop3s.auth", "true");
             properties.setProperty("mail.pop3s.socketFactory.class",
-                    "javax.net.ssl.SSLSocketFactory" );
+                    "javax.net.ssl.SSLSocketFactory");
             properties.setProperty("mail.pop3s.ssl.trust", "*");
 
             Session emailSession = Session.getDefaultInstance(properties);
@@ -52,7 +55,7 @@ public class MailReceive{
                 //messages_mail.get(i).setSubject(message.getSubject());
                 //messages_mail.get(i).setContent(message.getContent().toString());
 
-                messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(),message.getSubject(),getTextFromMessage(message) ));
+                messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(), message.getSubject(), getTextFromMessage(message)));
             }
 
 
@@ -73,13 +76,74 @@ public class MailReceive{
             emailFolder.close(false);
             emailStore.close();
 
-        } catch (NoSuchProviderException e) {e.printStackTrace();}
-        catch (MessagingException e) {e.printStackTrace();} catch (IOException e) {
+        } catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return messages_mail;
     }
 
+    public void setConfig(String pop3Host, String port, String storeType,
+                          String user, String password) throws NoSuchProviderException {
+        //mailbox.receiveEmail(user.host, Integer.toString(user.port), user.mailStoreType, user.username, user.password).get(7);
+
+
+        properties.put("mail.pop3.host", pop3Host);
+        properties.put("mail.pop3.port", port);
+
+        properties.setProperty("mail.store.protocol", "pop3s");
+        properties.setProperty("mail.pop3s.host", pop3Host);
+        properties.setProperty("mail.pop3s.port", port);
+        properties.setProperty("mail.pop3s.auth", "true");
+        properties.setProperty("mail.pop3s.socketFactory.class",
+                "javax.net.ssl.SSLSocketFactory");
+        properties.setProperty("mail.pop3s.ssl.trust", "*");
+
+        properties.setProperty("username", user);
+        properties.setProperty("password", password);
+
+        Session emailSession = Session.getDefaultInstance(properties);
+
+        this.emailStore = (POP3Store) emailSession.getStore("pop3s");
+    }
+
+    public ArrayList<Mail> getEmails() {
+        ArrayList<Message> messages;
+        ArrayList<Mail> messages_mail = new ArrayList<>();
+        try {
+
+            emailStore.connect(properties.getProperty("username"), properties.getProperty("password"));
+            //3) create the folder object and open it
+            Folder emailFolder = null;
+
+            emailFolder = emailStore.getFolder("INBOX");
+            emailFolder.open(Folder.READ_ONLY);
+
+            //4) retrieve the messages from the folder in an array and print it
+            messages = new ArrayList<>(Arrays.asList(emailFolder.getMessages()));
+
+
+            for (int i = 0; i < messages.size()-1; i++) {
+                Message message = messages.get(i);
+                //messages_mail.get(i).setFrom(message.getFrom().toString());
+                //messages_mail.get(i).setSubject(message.getSubject());
+                //messages_mail.get(i).setContent(message.getContent().toString());
+
+                messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(), message.getSubject(), getTextFromMessage(message)));
+            }
+
+
+            emailFolder.close(false);
+            emailStore.close();
+        } catch (MessagingException | IOException e) {
+            e.printStackTrace();
+        }
+
+        return messages_mail;
+    }
 
     private static String getTextFromMessage(Message message) throws MessagingException, IOException {
         String result = "";
@@ -93,7 +157,7 @@ public class MailReceive{
     }
 
     private static String getTextFromMimeMultipart(
-            MimeMultipart mimeMultipart)  throws MessagingException, IOException{
+            MimeMultipart mimeMultipart) throws MessagingException, IOException {
         String result = "";
         int count = mimeMultipart.getCount();
         for (int i = 0; i < count; i++) {
@@ -103,9 +167,9 @@ public class MailReceive{
                 break; // without break same text appears twice in my tests
             } else if (bodyPart.isMimeType("text/html")) {
                 String html = (String) bodyPart.getContent();
-                result = result + "\n" + bodyPart.getContent();//org.jsoup.Jsoup.parse(html).text();
-            } else if (bodyPart.getContent() instanceof MimeMultipart){
-                result = result + getTextFromMimeMultipart((MimeMultipart)bodyPart.getContent());
+                result = result + "\n" + org.jsoup.Jsoup.parse(html).text();
+            } else if (bodyPart.getContent() instanceof MimeMultipart) {
+                result = result + getTextFromMimeMultipart((MimeMultipart) bodyPart.getContent());
             }
         }
         return result;
