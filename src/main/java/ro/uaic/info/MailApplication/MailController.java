@@ -1,5 +1,6 @@
 package ro.uaic.info.MailApplication;
 
+import com.sun.mail.pop3.POP3Store;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -11,11 +12,11 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.*;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
+import javax.mail.*;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 
 @RestController
@@ -25,7 +26,11 @@ public class MailController {
     @Autowired
     private static JavaMailSenderImpl mailSender;
 
-    private static MailReceive mailbox;
+    private MailReceive mailbox = new MailReceive();
+
+    private Session emailSession;
+
+    POP3Store emailStore;
 
     @BeforeAll
     public static void setup() {
@@ -44,7 +49,9 @@ public class MailController {
 
     @GetMapping("/test")
     @ResponseBody
-    public String testResponse() { return "Hello"; }
+    public String testResponse() {
+        return "Hello";
+    }
 
     @PostMapping("/send_text_email")
     public String sendPlainTextEmail(@RequestBody Mail mail) {
@@ -70,7 +77,7 @@ public class MailController {
         helper.setTo(mailAttachment.getTo());
         helper.setText(mailAttachment.getContent());
 
-       // helper.setText("Attach file here: ", true);
+        // helper.setText("Attach file here: ", true);
 
         FileSystemResource file = new FileSystemResource(new File(mailAttachment.getAttachment()));
         helper.addAttachment(mailAttachment.getAttachmentName(), file);
@@ -79,11 +86,18 @@ public class MailController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @PostMapping(path="/getEmails", produces=MediaType.APPLICATION_JSON_VALUE)
-    public Mail /*ArrayList<Message>*/ postController(
-            @RequestBody MailPOPcfg user) {
+    @PostMapping("/configPOP")
+    public ResponseEntity postController(
+            @RequestBody MailPOPcfg user) throws MessagingException {
 
-        return mailbox.receiveEmail(user.host,Integer.toString(user.port) ,user.mailStoreType,user.username,user.password ).get(7);
+        mailbox.setConfig(user.host, Integer.toString(user.port), user.mailStoreType, user.username, user.password);
+
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @GetMapping("/getEmails")
+    public ArrayList<Mail> getEmails(){
+        return mailbox.getEmails();
     }
 
     @PostMapping("/configSMTP")
