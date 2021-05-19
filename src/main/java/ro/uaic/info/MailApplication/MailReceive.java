@@ -126,7 +126,7 @@ public class MailReceive {
             messages = new ArrayList<>(Arrays.asList(emailFolder.getMessages()));
 
 
-            for (int i = 0; i < messages.size()-1; i++) {
+            for (int i = 0; i < 20/*messages.size()-1*/; i++) {
                 Message message = messages.get(i);
                 //messages_mail.get(i).setFrom(message.getFrom().toString());
                 //messages_mail.get(i).setSubject(message.getSubject());
