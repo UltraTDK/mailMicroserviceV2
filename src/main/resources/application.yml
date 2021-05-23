@@ -28,5 +28,3 @@ eureka:
   instance:
     hostname: ${DOMAIN_NAME}
     nonSecurePort: 80
-server:
-  port: 8081
