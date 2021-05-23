@@ -14,7 +14,7 @@ public class MailReceive {
     POP3Store emailStore;
     Properties properties = new Properties();
 
-    public static ArrayList<Mail> receiveEmail(String pop3Host, String port, String storeType,
+    public  ArrayList<Mail> receiveEmail(String pop3Host, String port, String storeType,
                                                String user, String password) {
         ArrayList<Message> messages = new ArrayList<>();
         ArrayList<Mail> messages_mail = new ArrayList<>();
@@ -132,7 +132,7 @@ public class MailReceive {
                 //messages_mail.get(i).setSubject(message.getSubject());
                 //messages_mail.get(i).setContent(message.getContent().toString());
 
-                messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(), message.getSubject(), getTextFromMessage(message)));
+                messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(), message.getSubject(),message.getContent().toString()) /*getTextFromMessage(message))*/);
             }
 
 
@@ -145,7 +145,7 @@ public class MailReceive {
         return messages_mail;
     }
 
-    private static String getTextFromMessage(Message message) throws MessagingException, IOException {
+    private String getTextFromMessage(Message message) throws MessagingException, IOException {
         String result = "";
         if (message.isMimeType("text/plain")) {
             result = message.getContent().toString();
@@ -156,8 +156,8 @@ public class MailReceive {
         return result;
     }
 
-    private static String getTextFromMimeMultipart(
-            MimeMultipart mimeMultipart) throws MessagingException, IOException {
+    private String getTextFromMimeMultipart(
+            MimeMultipart mimeMultipart)  throws MessagingException, IOException{
         String result = "";
         int count = mimeMultipart.getCount();
         for (int i = 0; i < count; i++) {
@@ -168,8 +168,8 @@ public class MailReceive {
             } else if (bodyPart.isMimeType("text/html")) {
                 String html = (String) bodyPart.getContent();
                 result = result + "\n" + org.jsoup.Jsoup.parse(html).text();
-            } else if (bodyPart.getContent() instanceof MimeMultipart) {
-                result = result + getTextFromMimeMultipart((MimeMultipart) bodyPart.getContent());
+            } else if (bodyPart.getContent() instanceof MimeMultipart){
+                result = result + getTextFromMimeMultipart((MimeMultipart)bodyPart.getContent());
             }
         }
         return result;
