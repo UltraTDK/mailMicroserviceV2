@@ -54,7 +54,7 @@ public class MailController {
     }
 
     @PostMapping("/send_text_email")
-    public String sendPlainTextEmail(@RequestBody Mail mail) {
+    public SimpleMailMessage sendPlainTextEmail(@RequestBody Mail mail) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(mail.getFrom());
         message.setTo(mail.getTo());
@@ -63,7 +63,7 @@ public class MailController {
 
         mailSender.send(message);
 
-        return "result";
+        return message;
     }
 
     @PostMapping("/send_email_attachment")
