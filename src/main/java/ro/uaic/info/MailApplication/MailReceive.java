@@ -121,7 +121,7 @@ public class MailReceive {
 
                 String mailContent = getText(message);
 
-                System.out.println(mailContent);
+                //System.out.println(mailContent);
                 messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(), message.getSubject(), mailContent)/*message.getContent().toString())getTextFromMessage(message))*/);
             }
 
