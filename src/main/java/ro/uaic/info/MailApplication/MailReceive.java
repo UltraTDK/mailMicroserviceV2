@@ -56,20 +56,8 @@ public class MailReceive {
                 //messages_mail.get(i).setSubject(message.getSubject());
                 //messages_mail.get(i).setContent(message.getContent().toString());
 
-                messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(), message.getSubject(), getTextFromMessage(message)));
+               // messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(), message.getSubject(), getTextFromMessage(message)));
             }
-
-
-
-            /*
-            for (int i = 0; i < messages.length; i++) {
-                Message message = messages[i];
-                System.out.println("---------------------------------");
-                System.out.println("Email Number " + (i + 1));
-                System.out.println("Subject: " + message.getSubject());
-                System.out.println("From: " + message.getFrom()[0]);
-                System.out.println("Text: " + message.getContent().toString());
-            }*/
 
             //5) close the store and folder objects
 
@@ -80,8 +68,6 @@ public class MailReceive {
         } catch (NoSuchProviderException e) {
             e.printStackTrace();
         } catch (MessagingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
             e.printStackTrace();
         }
         return messages_mail;
@@ -103,7 +89,7 @@ public class MailReceive {
                 "javax.net.ssl.SSLSocketFactory");
         properties.setProperty("mail.pop3s.ssl.trust", "*");
 
-        properties.setProperty("username", user);
+        properties.setProperty("username", "recent:" + user);
         properties.setProperty("password", password);
 
         Session emailSession = Session.getInstance(properties);
@@ -120,21 +106,21 @@ public class MailReceive {
             //3) create the folder object and open it
             Folder emailFolder = null;
 
-            emailFolder = emailStore.getFolder("INBOX");
+            emailFolder = emailStore.getDefaultFolder().getFolder("INBOX");
             emailFolder.open(Folder.READ_ONLY);
 
             //4) retrieve the messages from the folder in an array and print it
             messages = new ArrayList<>(Arrays.asList(emailFolder.getMessages()));
 
 
-            for (int i = 0; i < messages.size(); i++) {
+            for (int i = messages.size()-1; i > 20 /*messages.size()*/; i--) {
                 Message message = messages.get(i);
                 //messages_mail.get(i).setFrom(message.getFrom().toString());
                 //messages_mail.get(i).setSubject(message.getSubject());
                 //messages_mail.get(i).setContent(message.getContent().toString());
 
-                //String mailContent = StringEscapeUtils.unescapeJava(message.getContent().toString());
-                String mailContent = getTextFromMimeMultipart((MimeMultipart) message.getContent());
+                String mailContent = getText(message);
+
                 System.out.println(mailContent);
                 messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(), message.getSubject(), mailContent)/*message.getContent().toString())getTextFromMessage(message))*/);
             }
@@ -149,34 +135,49 @@ public class MailReceive {
         return messages_mail;
     }
 
-    private String getTextFromMessage(Message message) throws MessagingException, IOException {
-        String result = "";
-        if (message.isMimeType("text/plain")) {
-            result = message.getContent().toString();
-        } else if (message.isMimeType("multipart/*")) {
-            MimeMultipart mimeMultipart = (MimeMultipart) message.getContent();
-            result = getTextFromMimeMultipart(mimeMultipart);
-        }
-        return result;
-    }
 
-    private String getTextFromMimeMultipart(
-            MimeMultipart mimeMultipart)  throws MessagingException, IOException{
-        String result = "";
-        int count = mimeMultipart.getCount();
-        for (int i = 0; i < count; i++) {
-            BodyPart bodyPart = mimeMultipart.getBodyPart(i);
-            if (bodyPart.isMimeType("text/plain")) {
-                result = result + "\n" + bodyPart.getContent();
-                break;
-            } else if (bodyPart.isMimeType("text/html")) {
-                String html = (String) bodyPart.getContent();
-                result = result + "\n" + org.jsoup.Jsoup.parse(html).text();
-            } else if (bodyPart.getContent() instanceof MimeMultipart){
-                result = result + getTextFromMimeMultipart((MimeMultipart)bodyPart.getContent());
+    private boolean textIsHtml = false;
+
+    /**
+     * Return the primary text content of the message.
+     */
+    private String getText(Part p) throws
+            MessagingException, IOException {
+        if (p.isMimeType("text/*")) {
+            String s = (String)p.getContent();
+            textIsHtml = p.isMimeType("text/html");
+            return s;
+        }
+
+        if (p.isMimeType("multipart/alternative")) {
+            // prefer html text over plain text
+            Multipart mp = (Multipart)p.getContent();
+            String text = null;
+            for (int i = 0; i < mp.getCount(); i++) {
+                Part bp = mp.getBodyPart(i);
+                if (bp.isMimeType("text/plain")) {
+                    if (text == null)
+                        text = getText(bp);
+                    continue;
+                } else if (bp.isMimeType("text/html")) {
+                    String s = getText(bp);
+                    if (s != null)
+                        return s;
+                } else {
+                    return getText(bp);
+                }
+            }
+            return text;
+        } else if (p.isMimeType("multipart/*")) {
+            Multipart mp = (Multipart)p.getContent();
+            for (int i = 0; i < mp.getCount(); i++) {
+                String s = getText(mp.getBodyPart(i));
+                if (s != null)
+                    return s;
             }
         }
-        return result;
+
+        return null;
     }
 
 }
