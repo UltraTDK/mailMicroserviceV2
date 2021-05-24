@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Properties;
 import javax.mail.*;
 import javax.mail.internet.MimeMultipart;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import com.sun.mail.pop3.POP3Store;
 
@@ -105,7 +106,7 @@ public class MailReceive {
         properties.setProperty("username", user);
         properties.setProperty("password", password);
 
-        Session emailSession = Session.getDefaultInstance(properties);
+        Session emailSession = Session.getInstance(properties);
 
         this.emailStore = (POP3Store) emailSession.getStore("pop3s");
     }
@@ -126,13 +127,16 @@ public class MailReceive {
             messages = new ArrayList<>(Arrays.asList(emailFolder.getMessages()));
 
 
-            for (int i = 0; i < 20/*messages.size()-1*/; i++) {
+            for (int i = 0; i < messages.size(); i++) {
                 Message message = messages.get(i);
                 //messages_mail.get(i).setFrom(message.getFrom().toString());
                 //messages_mail.get(i).setSubject(message.getSubject());
                 //messages_mail.get(i).setContent(message.getContent().toString());
 
-                messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(), message.getSubject(),message.getContent().toString()) /*getTextFromMessage(message))*/);
+                //String mailContent = StringEscapeUtils.unescapeJava(message.getContent().toString());
+                String mailContent = getTextFromMimeMultipart((MimeMultipart) message.getContent());
+                System.out.println(mailContent);
+                messages_mail.add(new Mail(message.getFrom()[0].toString(), message.getAllRecipients()[0].toString(), message.getSubject(), mailContent)/*message.getContent().toString())getTextFromMessage(message))*/);
             }
 
 
@@ -164,7 +168,7 @@ public class MailReceive {
             BodyPart bodyPart = mimeMultipart.getBodyPart(i);
             if (bodyPart.isMimeType("text/plain")) {
                 result = result + "\n" + bodyPart.getContent();
-                break; // without break same text appears twice in my tests
+                break;
             } else if (bodyPart.isMimeType("text/html")) {
                 String html = (String) bodyPart.getContent();
                 result = result + "\n" + org.jsoup.Jsoup.parse(html).text();
